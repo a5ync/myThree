@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Lines and Dashes (Three.js)</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel=stylesheet href="css/base.css"/>
+</head>
+<body>
+
+<script src="js/Three.js"></script>
+<script src="js/Detector.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/THREEx.KeyboardState.js"></script>
+<script src="js/THREEx.FullScreen.js"></script>
+<script src="js/THREEx.WindowResize.js"></script>
+
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui.js"></script>
+<link rel=stylesheet href="css/jquery-ui.css" />
+<link rel=stylesheet href="css/info.css"/>
+<script src="js/info.js"></script>
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+This three.js demo is part of a collection at
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+<!-- ------------------------------------------------------------ -->
+
+<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+<script>
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: July 2013 (three.js v59dev)
+ */
+
+// MAIN
+
+// standard global variables
+var container, scene, camera, renderer, controls, stats;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
+// custom global variables
+var cube;
+var lines=[];
+init();
+animate();
+
+// FUNCTIONS
+function init()
+{
+	// SCENE
+	scene = new THREE.Scene();
+	// CAMERA
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	// camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, 1, FAR);
+	scene.add(camera);
+	camera.position.set(0,0,50);
+
+	camera.lookAt(scene.position);
+
+	// RENDERER
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer();
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+	// EVENTS
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	// CONTROLS
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	controls.target = new THREE.Vector3(0, 0, 0);
+controls.userZoom = true;
+//controls.userRotate = false;
+controls.userPan = true;
+//controls.mouseButtons = { PAN: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, ORBIT: THREE.MOUSE.RIGHT }; // swapping left and right buttons
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.bottom = '0px';
+	stats.domElement.style.zIndex = 100;
+	container.appendChild( stats.domElement );
+	// LIGHT
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+
+	// FLOOR
+	// don't add floor -- easier to view result.
+
+	//scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+
+	////////////
+	// CUSTOM //
+	////////////
+for (var k=0;k<10;k++){
+	var lineGeometry = new THREE.Geometry();
+	var vertArray = lineGeometry.vertices;
+		var count=Math.floor(Math.random() * 1000);
+		for(var o=0;o<count;o++)
+	vertArray.push(
+		new THREE.Vector3(Math.random() * (90 - k*2) + 1,Math.random() * (90 - k*2) + 1,0),
+		new THREE.Vector3(Math.random() * (90 - k*2) + 1,Math.random() * (90 - k*2) + 1,0));
+		// new THREE.Vector3(-Math.random() * (90 - 1) + 1),
+		// new THREE.Vector3(Math.random() * (90 - 1) + 1));
+
+
+	lineGeometry.computeLineDistances();
+	var lineMaterial = new THREE.LineBasicMaterial( { color: Math.random() * 0xffffff } );
+	var line = new THREE.Line( lineGeometry, lineMaterial );
+	scene.add(line);
+lines.push(line);
+}
+
+
+	// var lineGeometry = new THREE.Geometry();
+	// var vertArray = lineGeometry.vertices;
+	// vertArray.push( new THREE.Vector3(-100, -100, 0), new THREE.Vector3(-100, 100, 0) );
+	// lineGeometry.computeLineDistances();
+	// var lineMaterial = new THREE.LineDashedMaterial( { color: 0x00cc00, dashSize: 4, gapSize: 2 } );
+	// var line = new THREE.Line( lineGeometry, lineMaterial );
+	// scene.add(line);
+	//
+	// var lineGeometry = new THREE.Geometry();
+	// var vertArray = lineGeometry.vertices;
+	// vertArray.push( new THREE.Vector3(-50, -100, 0), new THREE.Vector3(-50, 100, 0) );
+	// lineGeometry.computeLineDistances();
+	// var lineMaterial = new THREE.LineDashedMaterial( { color: 0x0000cc, dashSize: 1, gapSize: 3 } );
+	// var line = new THREE.Line( lineGeometry, lineMaterial );
+	// scene.add(line);
+	//
+	// var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50 );
+	//
+	// // use LineBasicMaterial if no dashes are desired
+	// var dashMaterial = new THREE.LineDashedMaterial( { color: 0x000000, dashSize: 2, gapSize: 3 } );
+	//
+	// cube = new THREE.Line( geo2line(cubeGeometry), dashMaterial, THREE.LinePieces );
+	// cube.position.set(50,26,0);
+	// scene.add(cube);
+
+}
+var licznik=0;
+var kp=0;
+function animate()
+{
+	kp++;
+//lines[0].rotateOnAxis( new THREE.Vector3(0,1,0), licznik);
+	// var index=Math.floor(Math.random() * 1);
+	// lines[index].rotateOnAxis( new THREE.Vector3(0,1,0), -Math.random() * (90 - 1) + 1);
+	//if(licznik%10==0)
+	// for(var i=0;i<100;i++)
+	// {
+	// 	lines[i].rotateOnAxis( new THREE.Vector3(0,1,0), -Math.random() * (90 - 1) + 1);
+	// 	lines[i].rotateOnAxis( new THREE.Vector3(1,0,0), -Math.random() * (90 - 1) + 1);
+	// }
+	if (kp%20==0)
+	lines[0].material.color = new THREE.Color( Math.random() * 0xffffff );
+    requestAnimationFrame( animate );
+	render();
+	update();
+}
+
+function update()
+{
+	if ( keyboard.pressed("z") )
+	{
+		// do something
+		licznik+=0.001;
+		lines[0].rotateOnAxis( new THREE.Vector3(0,1,0), licznik);
+	}
+
+	controls.update();
+
+	stats.update();
+}
+
+function render()
+{
+	renderer.render( scene, camera );
+}
+
+function geo2line( geo ) // credit to WestLangley!
+{
+    var geometry = new THREE.Geometry();
+    var vertices = geometry.vertices;
+
+	for ( i = 0; i < geo.faces.length; i++ )
+	{
+        var face = geo.faces[ i ];
+        if ( face instanceof THREE.Face3 )
+		{
+            var a = geo.vertices[ face.a ].clone();
+			var b = geo.vertices[ face.b ].clone();
+			var c = geo.vertices[ face.c ].clone();
+            vertices.push( a,b, b,c, c,a );
+        }
+		else if ( face instanceof THREE.Face4 )
+		{
+			var a = geo.vertices[ face.a ].clone();
+			var b = geo.vertices[ face.b ].clone();
+			var c = geo.vertices[ face.c ].clone();
+			var d = geo.vertices[ face.d ].clone();
+            vertices.push( a,b, b,c, c,d, d,a );
+        }
+    }
+
+    geometry.computeLineDistances();
+    return geometry;
+}
+</script>
+
+</body>
+</html>
